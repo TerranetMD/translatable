@@ -1,7 +1,6 @@
 <?php namespace Terranet\Translatable;
 
-use App;
-use Dimsav\Translatable\Exception\LocalesNotDefinedException;
+use Terranet\Translatable\Exception\LocalesNotDefinedException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +13,19 @@ trait Translatable {
      */
     public function translate($locale = null, $withFallback = false)
     {
+        if (! $locale)
+        {
+            $locale = (int) Lang::id();
+        }
+        else  if (is_numeric($locale))
+        {
+            $locale = (int) $locale;
+        }
+        else if (is_string($locale))
+        {
+            $locale = Lang::isValid($locale) ? (int) Lang::find($locale)->id : Lang::slug();
+        }
+
         return $this->getTranslation($locale, $withFallback);
     }
 
@@ -34,42 +46,38 @@ trait Translatable {
     }
 
     /**
-     * @param null $locale
+     * @param int $locale
      * @param bool|null $withFallback
      * @return Model|null
      */
-    public function getTranslation($locale = null, $withFallback = null)
+    private function getTranslation($locale = null, $withFallback = null)
     {
-        $locale = $locale ?: App::getLocale();
+        $locale = $locale ?: Lang::id();
 
         if ($withFallback === null)
         {
             $withFallback = isset($this->useTranslationFallback) ? $this->useTranslationFallback : false;
         }
 
-        if ($this->getTranslationByLocaleKey($locale))
+        if ($translation = $this->getTranslationByLocaleKey($locale))
         {
-            $translation = $this->getTranslationByLocaleKey($locale);
+            return $translation;
         }
-        elseif ($withFallback && config('fallback_locale') && $this->getTranslationByLocaleKey(config('fallback_locale')))
+        elseif ($withFallback && $translation = $this->getTranslationByLocaleKey(config('fallback_locale')))
         {
-            $translation = $this->getTranslationByLocaleKey(config('fallback_locale'));
-        }
-        else
-        {
-            $translation = null;
+            return $translation;
         }
 
-        return $translation;
+        return null;
     }
 
     public function hasTranslation($locale = null)
     {
-        $locale = $locale ?: App::getLocale();
+        $locale = $locale ?: Lang::id();
 
         foreach ($this->translations as $translation)
         {
-            if ($translation->getAttribute('locale') == $locale)
+            if ($translation->getAttribute('lang_id') == $locale)
             {
                 return true;
             }
@@ -85,7 +93,7 @@ trait Translatable {
 
     public function getTranslationSuffix()
     {
-        return get_class($this) . config('translatable::translation_suffix', 'Langs');
+        return get_class($this) . config('translatable::translation_suffix', 'Lang');
     }
 
     public function getRelationKey()
@@ -115,7 +123,7 @@ trait Translatable {
     {
         if (in_array($key, $this->translatedAttributes))
         {
-            $this->getTranslationOrNew(App::getLocale())->$key = $value;
+            $this->getTranslationOrNew(Lang::id())->$key = $value;
         }
         else
         {
@@ -169,7 +177,6 @@ trait Translatable {
     public function fill(array $attributes)
     {
         $totallyGuarded = $this->totallyGuarded();
-
         foreach ($attributes as $key => $values)
         {
             if ($this->isKeyALocale($key))
@@ -196,7 +203,7 @@ trait Translatable {
     {
         foreach ($this->translations as $translation)
         {
-            if ($translation->getAttribute('locale') == $key)
+            if ($translation->getAttribute('lang_id') == $key)
             {
                 return $translation;
             }
@@ -212,12 +219,13 @@ trait Translatable {
     protected function isKeyALocale($key)
     {
         $locales = $this->getLocales();
+
         return in_array($key, $locales);
     }
 
     protected function getLocales()
     {
-        $locales = (array) Lang::lists();
+        $locales = (array) Lang::ids();
 
         if (empty($locales))
         {
@@ -244,7 +252,7 @@ trait Translatable {
     {
         $dirtyAttributes = $translation->getDirty();
 
-        unset($dirtyAttributes['locale']);
+        unset($dirtyAttributes['lang_id']);
 
         return count($dirtyAttributes) > 0;
     }
@@ -255,7 +263,7 @@ trait Translatable {
 
         $translation = new $modelName;
 
-        $translation->setAttribute('locale', $locale);
+        $translation->setAttribute('lang_id', $locale);
 
         $this->translations->add($translation);
 
@@ -271,7 +279,7 @@ trait Translatable {
     {
         return $query->whereHas('translations', function(Builder $q) use ($locale)
         {
-            $q->where('locale', '=', $locale);
+            $q->where('lang_id', '=', $locale);
         });
     }
 
