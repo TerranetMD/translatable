@@ -5,6 +5,7 @@ use Dimsav\Translatable\Exception\LocalesNotDefinedException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
+use Lang;
 
 trait Translatable {
 
@@ -50,12 +51,9 @@ trait Translatable {
         {
             $translation = $this->getTranslationByLocaleKey($locale);
         }
-        elseif ($withFallback
-            && App::make('config')->get('translatable::fallback_locale')
-            && $this->getTranslationByLocaleKey(App::make('config')->get('translatable::fallback_locale'))
-        )
+        elseif ($withFallback && config('fallback_locale') && $this->getTranslationByLocaleKey(config('fallback_locale')))
         {
-            $translation = $this->getTranslationByLocaleKey(App::make('config')->get('translatable::fallback_locale'));
+            $translation = $this->getTranslationByLocaleKey(config('fallback_locale'));
         }
         else
         {
@@ -71,7 +69,7 @@ trait Translatable {
 
         foreach ($this->translations as $translation)
         {
-            if ($translation->getAttribute($this->getLocaleKey()) == $locale)
+            if ($translation->getAttribute('locale') == $locale)
             {
                 return true;
             }
@@ -82,25 +80,17 @@ trait Translatable {
 
     public function getTranslationModelName()
     {
-        return $this->translationModel ?: $this->getTranslationModelNameDefault();
+        return $this->translationModel ?: $this->getTranslationSuffix();
     }
 
-    public function getTranslationModelNameDefault()
+    public function getTranslationSuffix()
     {
-        $config = App::make('config');
-
-        return get_class($this) . $config->get('translatable::translation_suffix', 'Translation');
+        return get_class($this) . config('translatable::translation_suffix', 'Langs');
     }
 
     public function getRelationKey()
     {
         return $this->translationForeignKey ?: $this->getForeignKey();
-    }
-
-    public function getLocaleKey()
-    {
-        $config = App::make('config');
-        return $this->localeKey ?: $config->get('translatable::locale_key', 'locale');
     }
 
     public function translations()
@@ -206,7 +196,7 @@ trait Translatable {
     {
         foreach ($this->translations as $translation)
         {
-            if ($translation->getAttribute($this->getLocaleKey()) == $key)
+            if ($translation->getAttribute('locale') == $key)
             {
                 return $translation;
             }
@@ -227,13 +217,11 @@ trait Translatable {
 
     protected function getLocales()
     {
-        $config = App::make('config');
-        $locales = (array) $config->get('translatable::locales', array());
+        $locales = (array) Lang::lists();
 
         if (empty($locales))
         {
-            throw new LocalesNotDefinedException('Please make sure you have run "php artisan config:publish dimsav/laravel-translatable" '.
-                ' and that the locales configuration is defined.');
+            throw new LocalesNotDefinedException('Please make sure you have included terranet/multilingual package and that the languages table is defined and not empty.');
         }
         return $locales;
     }
@@ -255,16 +243,22 @@ trait Translatable {
     protected function isTranslationDirty(Model $translation)
     {
         $dirtyAttributes = $translation->getDirty();
-        unset($dirtyAttributes[$this->getLocaleKey()]);
+
+        unset($dirtyAttributes['locale']);
+
         return count($dirtyAttributes) > 0;
     }
 
     public function getNewTranslation($locale)
     {
         $modelName = $this->getTranslationModelName();
+
         $translation = new $modelName;
-        $translation->setAttribute($this->getLocaleKey(), $locale);
+
+        $translation->setAttribute('locale', $locale);
+
         $this->translations->add($translation);
+
         return $translation;
     }
 
@@ -277,7 +271,7 @@ trait Translatable {
     {
         return $query->whereHas('translations', function(Builder $q) use ($locale)
         {
-            $q->where($this->getLocaleKey(), '=', $locale);
+            $q->where('locale', '=', $locale);
         });
     }
 
@@ -303,7 +297,7 @@ trait Translatable {
 
     private function alwaysFillable()
     {
-        return App::make('config')->get('translatable::always_fillable', false);
+        return config('translatable::always_fillable', false);
     }
 
 }
