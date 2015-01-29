@@ -1,12 +1,16 @@
-<?php namespace Dimsav\Translatable;
+<?php namespace Terranet\Translatable;
 
 use Illuminate\Support\ServiceProvider;
 
 class TranslatableServiceProvider extends ServiceProvider {
 
+    protected $package = 'terranet/translatable';
+
     public function boot()
     {
-//        $this->package('dimsav/laravel-translatable', 'translatable', __DIR__ .'/../');
+        $this->publishes([
+            base_path('vendor/' . $this->package . '/src/config/config.php') => config_path('translatable.php')
+        ]);
     }
 
     /**
@@ -16,6 +20,9 @@ class TranslatableServiceProvider extends ServiceProvider {
      */
     public function register()
     {
-
+        $this->mergeConfigFrom(
+            base_path('vendor/' . $this->package . '/src/config/config.php'),
+            'translatable'
+        );
     }
 }
