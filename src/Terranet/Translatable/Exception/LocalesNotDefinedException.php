@@ -1,3 +1,3 @@
-<?php namespace Dimsav\Translatable\Exception;
+<?php namespace Terranet\Translatable\Exception;
 
 class LocalesNotDefinedException extends \Exception {}

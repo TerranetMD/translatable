@@ -1,4 +1,4 @@
-<?php namespace Dimsav\Translatable;
+<?php namespace Terranet\Translatable;
 
 use App;
 use Dimsav\Translatable\Exception\LocalesNotDefinedException;
