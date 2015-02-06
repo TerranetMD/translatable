@@ -138,11 +138,12 @@ trait HasTranslations {
     {
         if ($this->isKeyReturningTranslationText($key))
         {
-            if ($this->getTranslation() === null)
+            if ($translation = $this->getTranslation())
             {
-                return null;
+
+                return $translation->$key;
             }
-            return $this->getTranslation()->$key;
+            return null;
         }
         return parent::getAttribute($key);
     }
