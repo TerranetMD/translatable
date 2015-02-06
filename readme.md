@@ -95,23 +95,22 @@ Create your migrations:
 
 The models:
 
-1. The translatable model `Country` should implement the interface `Terranet\Translatable\Translatable` and use `Terranet\Translatable\HasTranslations` trait. 
+The translatable model `Country` should implement the interface `Terranet\Translatable\Translatable` and use `Terranet\Translatable\HasTranslations` trait. 
 
-2. The convention for the translation model is `CountryLang`.
+The convention for the translation model is `CountryLang`.
 
-        class Country extends Eloquent implements Translatable {
-   
-            use HasTranslations;
+    class Country extends Eloquent implements Translatable {
+        use HasTranslations;
     
-            public $translatedAttributes = array('name');
-            protected $fillable = ['slug', 'name'];
+        public $translatedAttributes = array('name');
+        protected $fillable = ['slug', 'name'];
 
-        }
+    }
 
-        class CountryLang extends Eloquent {
-            public $timestamps = false;
-            protected $fillable = ['name'];
-        }
+    class CountryLang extends Eloquent {
+        public $timestamps = false;
+        protected $fillable = ['name'];
+    }
     
 
 The array `$translatedAttributes` contains the names of the fields being translated in the "Translation" model.
