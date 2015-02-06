@@ -1,29 +1,6 @@
 <?php
 
 return [
-
-    /*
-    |--------------------------------------------------------------------------
-    | Application Locales
-    |--------------------------------------------------------------------------
-    |
-    | Contains an array with the applications available locales.
-    |
-    */
-    'locales' => ['en', 'ro', 'ru'],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Fallback Locale
-    |--------------------------------------------------------------------------
-    |
-    | A fallback locale is the locale being used to return a translation
-    | when the requested translation is not existing. To disable it
-    | set it to false.
-    |
-    */
-    'fallback_locale' => 'ro',
-
     /*
     |--------------------------------------------------------------------------
     | Translation Suffix
@@ -38,17 +15,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Locale key
-    |--------------------------------------------------------------------------
-    |
-    | Defines the 'locale' field name, which is used by the
-    | translation model.
-    |
-    */
-    'locale_key' => 'locale',
-
-    /*
-    |--------------------------------------------------------------------------
     | Make translated attributes always fillable
     |--------------------------------------------------------------------------
     |
@@ -60,6 +26,5 @@ return [
     |
     */
     'always_fillable' => false,
-
 
 ];

@@ -51,7 +51,7 @@ trait HasTranslations {
     {
         if (($translation = $this->getTranslation($locale, false)) === null)
         {
-            $translation = $this->getNewTranslation($locale);
+            $translation = $this->createNewTranslation($locale);
         }
         return $translation;
     }
@@ -210,7 +210,6 @@ trait HasTranslations {
      *
      * @param array $attributes
      * @return bool
-     * @internal param array $options
      */
     public function fill(array $attributes)
     {
