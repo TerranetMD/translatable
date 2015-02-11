@@ -110,7 +110,7 @@ trait HasTranslations {
 
     protected function getTranslationSuffix()
     {
-        return get_class($this) . config('translatable::translation_suffix', 'Lang');
+        return get_class($this) . config('translatable::translation_suffix', 'Translation');
     }
 
     public function getRelationKey()
