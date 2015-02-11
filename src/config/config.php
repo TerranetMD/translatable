@@ -11,7 +11,7 @@ return [
     | application, set this to 'Trans'.
     |
     */
-    'translation_suffix' => 'Langs',
+    'translation_suffix' => '_translations',
 
     /*
     |--------------------------------------------------------------------------

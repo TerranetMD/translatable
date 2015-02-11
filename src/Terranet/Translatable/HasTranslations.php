@@ -381,6 +381,6 @@ trait HasTranslations {
      */
     protected function getLocaleKey()
     {
-        return ($this->localeKey ? : 'lang_id');
+        return ($this->localeKey ? : 'language_id');
     }
 }
