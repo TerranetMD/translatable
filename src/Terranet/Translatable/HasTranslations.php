@@ -156,7 +156,7 @@ trait HasTranslations {
      */
     public function setAttribute($key, $value)
     {
-        if (in_array($key, $this->translatedAttributes))
+        if ($this->hasTranslatedAttributes() && in_array($key, $this->translatedAttributes))
         {
             $this->getTranslationOrNew(Lang::id())->$key = $value;
         }
@@ -261,7 +261,7 @@ trait HasTranslations {
      */
     protected function isKeyReturningTranslationText($key)
     {
-        return in_array($key, $this->translatedAttributes);
+        return $this->hasTranslatedAttributes() && in_array($key, $this->getTranslatedAttributes());
     }
 
     /**
@@ -336,7 +336,7 @@ trait HasTranslations {
 
     public function __isset($key)
     {
-        return (in_array($key, $this->translatedAttributes) || parent::__isset($key));
+        return (($this->hasTranslatedAttributes() && in_array($key, $this->getTranslatedAttributes())) || parent::__isset($key));
     }
 
     /**
@@ -396,9 +396,9 @@ trait HasTranslations {
     {
         $attributes = parent::toArray();
 
-        if ($withTranslations)
+        if ($withTranslations && $this->hasTranslatedAttributes())
         {
-            foreach($this->translatedAttributes AS $field)
+            foreach($this->getTranslatedAttributes() AS $field)
             {
                 if ($translations = $this->getTranslation())
                 {
@@ -456,9 +456,32 @@ trait HasTranslations {
     {
         $query->addSelect("{$mainTable}.{$keyName} AS {$keyName}");
 
-        foreach ($this->translatedAttributes as $column)
+        if ($this->hasTranslatedAttributes() && $columns = $this->getTranslatedAttributes())
         {
-            $query->addSelect("{$alias}.{$column}");
+            foreach ($columns as $column)
+            {
+                $query->addSelect("{$alias}.{$column}");
+            }
         }
+    }
+
+    /**
+     * Check if translated attributes are defined
+     *
+     * @return bool
+     */
+    protected function hasTranslatedAttributes()
+    {
+        return property_exists($this, 'translatedAttributes');
+    }
+
+    /**
+     * Get translated attributes
+     *
+     * @return array
+     */
+    protected function getTranslatedAttributes()
+    {
+        return (array) $this->translatedAttributes;
     }
 }
