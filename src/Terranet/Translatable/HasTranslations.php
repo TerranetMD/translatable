@@ -456,7 +456,8 @@ trait HasTranslations {
     {
         $query->addSelect("{$mainTable}.{$keyName} AS {$keyName}");
 
-        foreach ($this->translatedAttributes as $column) {
+        foreach ($this->translatedAttributes as $column)
+        {
             $query->addSelect("{$alias}.{$column}");
         }
     }
