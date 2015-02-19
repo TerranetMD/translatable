@@ -325,9 +325,7 @@ trait HasTranslations {
 
     protected function createNewTranslation($locale)
     {
-        $modelName = $this->getTranslationModelName();
-
-        $translation = new $modelName;
+        $translation = $this->getTranslationModel();
 
         $translation->setAttribute($this->getLocaleKey(), $locale);
 
@@ -341,28 +339,71 @@ trait HasTranslations {
         return (in_array($key, $this->translatedAttributes) || parent::__isset($key));
     }
 
-    public function scopeTranslatedIn(Builder $query, $locale)
-    {
-        return $query->whereHas('translations', function(Builder $q) use ($locale)
-        {
-            $q->where($this->getLocaleKey(), '=', $locale);
-        });
-    }
-
+    /**
+     * Allows fetching "Translatable" items with translations
+     *
+     * @note: To limit the number of columns during query it's recommended to add select($columns) statement before calling
+     * translated() scope
+     *
+     * Examples:
+     * there are a few ways to get id=>title associative array for all posts:
+     * @example1: Post::active()->select(['post.id', 'tt.title'])->translated()->lists('title', 'id');
+     * @example2: Post::active()->translated()->lists('title', 'id'); will return the same list, but query will contain all translated columns,
+     *            which can be a performance issue.
+     *
+     * @example3: Post::active()->select(['post.id', 'title', 'description'])->translated()->get();
+     *  - will return all posts and query will contain only specified columns
+     * @example4: Post::active()->translated()->get();
+     *  - the same result, but query contains all "Translatable" columns
+     *
+     * @param Builder $query
+     * @return Builder
+     */
     public function scopeTranslated(Builder $query)
     {
-        return $query->has('translations');
+        $mainTable  = $this->getTable();
+        $keyName    = $this->getKeyName();
+        $relKeyName = $this->getRelationKey();
+        $localeKey  = $this->getLocaleKey();
+        $joinTable  = $this->getTranslationModel()->getTable();
+        $langId     = Lang::id();
+        $alias      = "tt";
+
+        if ($this->isQueryWithoutColumns($query))
+        {
+            $this->fillQueryWithTranslatedColumns($query, $mainTable, $keyName, $alias);
+        }
+
+        $query
+            ->leftJoin("{$joinTable} AS {$alias}", function($join) use ($mainTable, $keyName, $relKeyName, $localeKey, $alias, $langId)
+                {
+                    $join
+                        ->on("{$mainTable}.{$keyName}", '=', "{$alias}.{$relKeyName}")
+                        ->where($localeKey, '=', (int) $langId);
+                });
+
+        return $query;
     }
 
-    public function toArray()
+
+    /**
+     * Cast model to array
+     *
+     * @param bool $withTranslations - include translated columns or not
+     * @return array
+     */
+    public function toArray($withTranslations = true)
     {
         $attributes = parent::toArray();
 
-        foreach($this->translatedAttributes AS $field)
+        if ($withTranslations)
         {
-            if ($translations = $this->getTranslation())
+            foreach($this->translatedAttributes AS $field)
             {
-                $attributes[$field] = $translations->$field;
+                if ($translations = $this->getTranslation())
+                {
+                    $attributes[$field] = $translations->$field;
+                }
             }
         }
 
@@ -382,5 +423,41 @@ trait HasTranslations {
     protected function getLocaleKey()
     {
         return ($this->localeKey ? : 'language_id');
+    }
+
+    /**
+     * @return mixed
+     */
+    protected function getTranslationModel()
+    {
+        $modelName = $this->getTranslationModelName();
+
+        return new $modelName;
+    }
+
+    /**
+     * @param $query
+     * @return bool
+     */
+    protected function isQueryWithoutColumns($query)
+    {
+        $columns    = $query->getQuery()->columns;
+
+        return !$columns || $columns == ['*'];
+    }
+
+    /**
+     * @param Builder $query
+     * @param $mainTable
+     * @param $keyName
+     * @param $alias
+     */
+    protected function fillQueryWithTranslatedColumns(Builder $query, $mainTable, $keyName, $alias)
+    {
+        $query->addSelect("{$mainTable}.{$keyName} AS {$keyName}");
+
+        foreach ($this->translatedAttributes as $column) {
+            $query->addSelect("{$alias}.{$column}");
+        }
     }
 }
