@@ -1,4 +1,6 @@
-<?php namespace Terranet\Translatable;
+<?php
+
+namespace Terranet\Translatable;
 
 interface Translatable {
 
@@ -7,5 +9,4 @@ interface Translatable {
     public function translateOrNew($locale);
 
     public function hasTranslation($locale = null);
-
 }

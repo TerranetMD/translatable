@@ -2,14 +2,13 @@
 
 use Illuminate\Support\ServiceProvider;
 
-class TranslatableServiceProvider extends ServiceProvider {
-
-    protected $package = 'terranet/translatable';
+class TranslatableServiceProvider extends ServiceProvider
+{
 
     public function boot()
     {
         $this->publishes([
-            base_path('vendor/' . $this->package . '/src/config/config.php') => config_path('translatable.php')
+            __DIR__ . '/../../config/translatable.php' => config_path()
         ]);
     }
 
@@ -20,9 +19,6 @@ class TranslatableServiceProvider extends ServiceProvider {
      */
     public function register()
     {
-        $this->mergeConfigFrom(
-            base_path('vendor/' . $this->package . '/src/config/config.php'),
-            'translatable'
-        );
+        $this->mergeConfigFrom(__DIR__ . '/../../config/translatable.php', 'translatable');
     }
 }

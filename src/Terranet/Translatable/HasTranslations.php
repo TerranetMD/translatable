@@ -7,7 +7,6 @@ use Terranet\Translatable\Exception\LocalesNotDefinedException;
 
 trait HasTranslations
 {
-
     /**
      * Get translation for specified|default|fallback locale
      *
@@ -28,24 +27,13 @@ trait HasTranslations
 
     /**
      * @param int       $locale
-     * @param bool|null $withFallback
      * @return Model|null
      */
-    protected function getTranslation($locale = null, $withFallback = null)
+    protected function getTranslation($locale = null)
     {
         $locale = $locale ?: \localizer\locale()->id();
 
-        if ($withFallback === null) {
-            $withFallback = isset($this->useTranslationFallback) ? $this->useTranslationFallback : false;
-        }
-
-        if ($translation = $this->getTranslationByLocaleKey($locale)) {
-            return $translation;
-        } elseif ($withFallback && $translation = $this->getTranslationByLocaleKey(config('fallback_locale'))) {
-            return $translation;
-        }
-
-        return null;
+        return $translation = $this->getTranslationByLocaleKey($locale);
     }
 
     /**
@@ -91,7 +79,7 @@ trait HasTranslations
      */
     protected function getTranslationOrNew($locale)
     {
-        if (($translation = $this->getTranslation($locale, false)) === null) {
+        if (($translation = $this->getTranslation($locale)) === null) {
             $translation = $this->createNewTranslation($locale);
         }
 
@@ -112,7 +100,7 @@ trait HasTranslations
     /**
      * @return mixed
      */
-    protected function getTranslationModel()
+    public function getTranslationModel()
     {
         $modelName = $this->getTranslationModelName();
 
@@ -160,7 +148,7 @@ trait HasTranslations
 
     public function getRelationKey()
     {
-        return $this->translationForeignKey ?: $this->getForeignKey();
+        return property_exists($this, 'translationForeignKey') ? $this->translationForeignKey : $this->getForeignKey();
     }
 
     /**
@@ -196,7 +184,7 @@ trait HasTranslations
      *
      * @return bool
      */
-    protected function hasTranslatedAttributes()
+    public function hasTranslatedAttributes()
     {
         return property_exists($this, 'translatedAttributes');
     }
@@ -206,7 +194,7 @@ trait HasTranslations
      *
      * @return array
      */
-    protected function getTranslatedAttributes()
+    public function getTranslatedAttributes()
     {
         return (array) $this->translatedAttributes;
     }
