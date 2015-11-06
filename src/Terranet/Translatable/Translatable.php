@@ -2,7 +2,8 @@
 
 namespace Terranet\Translatable;
 
-interface Translatable {
+interface Translatable
+{
 
     public function translate($locale = null, $withFallback = false);
 

@@ -1,3 +1,8 @@
-<?php namespace Terranet\Translatable\Exception;
+<?php
 
-class LocalesNotDefinedException extends \Exception {}
+namespace Terranet\Translatable\Exception;
+
+class LocalesNotDefinedException extends \Exception
+{
+
+}

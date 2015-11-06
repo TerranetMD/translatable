@@ -11,10 +11,9 @@ trait HasTranslations
      * Get translation for specified|default|fallback locale
      *
      * @param int $locale
-     * @param bool $withFallback
      * @return Model|null
      */
-    public function translate($locale = null, $withFallback = false)
+    public function translate($locale = null)
     {
         if (! $locale) {
             $locale = \localizer\locale()->id();
@@ -22,7 +21,7 @@ trait HasTranslations
             $locale = (int) $locale;
         }
 
-        return $this->getTranslation($locale, $withFallback);
+        return $this->getTranslation($locale);
     }
 
     /**
@@ -65,6 +64,8 @@ trait HasTranslations
 
     /**
      * @alias getTranslationOrNew
+     * @param $locale
+     * @return Model|null
      */
     public function translateOrNew($locale)
     {
@@ -161,7 +162,6 @@ trait HasTranslations
     {
         if ($this->isKeyReturningTranslationText($key)) {
             if ($translation = $this->getTranslation()) {
-
                 return $translation->$key;
             }
 
@@ -173,6 +173,8 @@ trait HasTranslations
 
     /**
      * Check if key is part of translatable attributes
+     * @param $key
+     * @return bool
      */
     protected function isKeyReturningTranslationText($key)
     {
@@ -336,7 +338,8 @@ trait HasTranslations
 
     public function __isset($key)
     {
-        return (($this->hasTranslatedAttributes() && in_array($key, $this->getTranslatedAttributes())) || parent::__isset($key));
+        return (($this->hasTranslatedAttributes() && in_array($key, $this->getTranslatedAttributes()))
+                || parent::__isset($key));
     }
 
     /**
@@ -370,10 +373,13 @@ trait HasTranslations
             $this->fillQueryWithTranslatedColumns($query, $mainTable, $keyName, $alias);
         }
 
-        $query->leftJoin("{$joinTable} AS {$alias}", function ($join) use ($mainTable, $keyName, $relKeyName, $localeKey, $alias, $langId) {
+        $query->leftJoin(
+            "{$joinTable} AS {$alias}",
+            function ($join) use ($mainTable, $keyName, $relKeyName, $localeKey, $alias, $langId) {
                 $join->on("{$mainTable}.{$keyName}", '=', "{$alias}.{$relKeyName}")
                      ->where($localeKey, '=', (int) $langId);
-            });
+            }
+        );
 
         return $query;
     }
@@ -417,7 +423,7 @@ trait HasTranslations
         $attributes = parent::toArray();
 
         if ($withTranslations && $this->hasTranslatedAttributes()) {
-            foreach ($this->getTranslatedAttributes() AS $field) {
+            foreach ($this->getTranslatedAttributes() as $field) {
                 if ($translations = $this->getTranslation()) {
                     $attributes[$field] = $translations->$field;
                 }
