@@ -4,8 +4,7 @@ namespace Terranet\Translatable;
 
 interface Translatable
 {
-
-    public function translate($locale = null, $withFallback = false);
+    public function translate($locale = null);
 
     public function translateOrNew($locale);
 

@@ -1,4 +1,6 @@
-<?php namespace Terranet\Translatable;
+<?php
+
+namespace Terranet\Translatable;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\MassAssignmentException;
