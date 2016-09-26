@@ -17,7 +17,7 @@ trait HasTranslations
      */
     public function translate($locale = null)
     {
-        if (! $locale) {
+        if (!$locale) {
             $locale = \localizer\locale()->id();
         } else {
             $locale = (int) $locale;
@@ -27,7 +27,7 @@ trait HasTranslations
     }
 
     /**
-     * @param int       $locale
+     * @param int $locale
      * @return Model|null
      */
     protected function getTranslation($locale = null)
@@ -329,6 +329,7 @@ trait HasTranslations
     {
         return array_reduce(\localizer\locales(), function ($ids, $locale) {
             $ids[] = $locale->id();
+
             return $ids;
         }, []);
     }
@@ -341,7 +342,7 @@ trait HasTranslations
     public function __isset($key)
     {
         return (($this->hasTranslatedAttributes() && in_array($key, $this->getTranslatedAttributes()))
-                || parent::__isset($key));
+            || parent::__isset($key));
     }
 
     /**
@@ -362,14 +363,14 @@ trait HasTranslations
      */
     public function scopeTranslated(Builder $query)
     {
-        $mainTable  = $this->getTable();
-        $keyName    = $this->getKeyName();
+        $mainTable = $this->getTable();
+        $keyName = $this->getKeyName();
         $relKeyName = $this->getRelationKey();
-        $localeKey  = $this->getLocaleKey();
-        $joinTable  = $this->getTranslationModel()->getTable();
-        $langId     = \localizer\locale()->id();
+        $localeKey = $this->getLocaleKey();
+        $joinTable = $this->getTranslationModel()->getTable();
+        $langId = \localizer\locale()->id();
 
-        $alias      = "tt";
+        $alias = "tt";
 
         if ($this->isQueryWithoutColumns($query)) {
             $this->fillQueryWithTranslatedColumns($query, $mainTable, $keyName, $alias);
@@ -379,7 +380,7 @@ trait HasTranslations
             "{$joinTable} AS {$alias}",
             function ($join) use ($mainTable, $keyName, $relKeyName, $localeKey, $alias, $langId) {
                 $join->on("{$mainTable}.{$keyName}", '=', "{$alias}.{$relKeyName}")
-                     ->where($localeKey, '=', (int) $langId);
+                    ->where($localeKey, '=', (int) $langId);
             }
         );
 
@@ -394,7 +395,7 @@ trait HasTranslations
     {
         $columns = $query->getQuery()->columns;
 
-        return ! $columns || $columns == ['*'];
+        return !$columns || $columns == ['*'];
     }
 
     /**
