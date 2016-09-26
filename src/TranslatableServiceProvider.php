@@ -10,7 +10,7 @@ class TranslatableServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/../../config/translatable.php' => config_path(),
+            __DIR__ . '/config.php' => config_path(),
         ]);
     }
 
@@ -21,6 +21,6 @@ class TranslatableServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__ . '/../../config/translatable.php', 'translatable');
+        $this->mergeConfigFrom(__DIR__ . '/config.php', 'translatable');
     }
 }
