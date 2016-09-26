@@ -10,7 +10,5 @@
         "psr-4": {
             "Terranet\\Translatable\\": "src/"
         }
-    },
-
-    "minimum-stability": "dev"
+    }
 }
