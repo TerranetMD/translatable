@@ -1,25 +1,15 @@
 {
     "name": "terranet/translatable",
     "description": "A Laravel package for multilingual models",
-    "keywords": ["laravel", "translation", "language", "database"],
+    "keywords": ["laravel", "translation", "language", "database", "admin architect"],
     "license": "MIT",
-    "authors": [
-        
-    ],
     "require": {
         "php": ">=5.4.0"
     },
-    "require-dev": {
-        "orchestra/testbench": "~2.0",
-        "phpunit/phpunit": "~4.0"
-    },
     "autoload": {
         "psr-4": {
-            "Terranet\\Translatable\\": "src/Terranet/Translatable/"
-        },
-        "classmap": [
-            "tests"
-        ]
+            "Terranet\\Translatable\\": "src/"
+        }
     },
 
     "minimum-stability": "dev"
