@@ -364,6 +364,7 @@ trait HasTranslations
      * @example4  : Post::active()->translated()->get();
      *            - the same result, but query contains all "Translatable" columns
      * @param Builder $query
+     * @hidden    - Hide this scope from AdminArchitect parser.
      * @return Builder
      */
     public function scopeTranslated(Builder $query)
