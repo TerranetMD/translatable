@@ -6,6 +6,13 @@
     "require": {
         "php": ">=5.4.0"
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Terranet\\Translatable\\TranslatableServiceProvider"
+            ]
+        }
+    },
     "autoload": {
         "psr-4": {
             "Terranet\\Translatable\\": "src/"
