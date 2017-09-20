@@ -412,12 +412,22 @@ trait HasTranslations
      */
     protected function fillQueryWithTranslatedColumns(Builder $query, $mainTable, $keyName, $alias)
     {
-        $query->addSelect("{$mainTable}.{$keyName} AS {$keyName}");
+        $fillable = array_merge([$keyName], $query->getModel()->getFillable());
+        $hidden = $query->getModel()->getHidden();
+        $fillable = array_diff($fillable, $hidden);
 
-        if ($this->hasTranslatedAttributes() && $columns = $this->getTranslatedAttributes()) {
-            foreach ($columns as $column) {
-                $query->addSelect("{$alias}.{$column}");
-            }
+        $fillable = array_map(function($column) use ($mainTable) {
+            return "{$mainTable}.{$column} AS {$column}";
+        }, $fillable);
+
+        $query->addSelect($fillable);
+
+        if ($this->hasTranslatedAttributes()) {
+            $columns = array_map(function($column) use ($alias) {
+                return "{$alias}.{$column}";
+            }, $this->getTranslatedAttributes());
+
+            $query->addSelect($columns);
         }
     }
 
