@@ -20,7 +20,7 @@ trait HasTranslations
         if (!$locale) {
             $locale = \localizer\locale()->id();
         } else {
-            $locale = (int) $locale;
+            $locale = (int)$locale;
         }
 
         return $this->getTranslation($locale);
@@ -34,7 +34,7 @@ trait HasTranslations
     {
         $locale = $locale ?: \localizer\locale()->id();
 
-        return $translation = $this->getTranslationByLocaleKey($locale);
+        return $this->getTranslationByLocaleKey($locale);
     }
 
     /**
@@ -45,13 +45,24 @@ trait HasTranslations
      */
     protected function getTranslationByLocaleKey($key)
     {
-        foreach ($this->translations as $translation) {
-            if ($translation->getAttribute($this->getLocaleKey()) == $key) {
+        foreach ($this->cachedTranslations() as $translation) {
+            if ($translation->getAttribute($this->getLocaleKey()) === $key) {
                 return $translation;
             }
         }
 
         return null;
+    }
+
+    public function cachedTranslations()
+    {
+        # @fallback: sometimes for deep translations tree this collection is empty
+        # we are going to actualise this collection in order to get its results.
+        if (!$this->translations->count()) {
+            $this->translations = $this->translations()->getResults();
+        }
+
+        return $this->translations;
     }
 
     /**
@@ -130,7 +141,7 @@ trait HasTranslations
     {
         $locale = $locale ?: \localizer\locale()->id();
 
-        foreach ($this->translations as $translation) {
+        foreach ($this->cachedTranslations() as $translation) {
             if ($translation->getAttribute($this->getLocaleKey()) == $locale) {
                 return true;
             }
@@ -168,8 +179,8 @@ trait HasTranslations
             }
 
             # fallback: try to find default locale values
-            if ($translate = $this->translate(\localizer\getDefault()->id())) {
-                return $translate->$key;
+            if ($translation = $this->getTranslation(\localizer\getDefault()->id())) {
+                return $translation->$key;
             }
 
             return null;
@@ -180,6 +191,7 @@ trait HasTranslations
 
     /**
      * Check if key is part of translatable attributes
+     *
      * @param $key
      * @return bool
      */
@@ -205,7 +217,7 @@ trait HasTranslations
      */
     public function getTranslatedAttributes()
     {
-        return (array) $this->translatedAttributes;
+        return (array)$this->translatedAttributes;
     }
 
     /**
@@ -332,7 +344,7 @@ trait HasTranslations
      */
     protected function getLocales()
     {
-        return array_reduce(\localizer\locales(), function ($ids, $locale) {
+        return \localizer\locales()->reduce(function ($ids, $locale) {
             $ids[] = $locale->id();
 
             return $ids;
@@ -386,7 +398,7 @@ trait HasTranslations
             "{$joinTable} AS {$alias}",
             function ($join) use ($mainTable, $keyName, $relKeyName, $localeKey, $alias, $langId) {
                 $join->on("{$mainTable}.{$keyName}", '=', "{$alias}.{$relKeyName}")
-                    ->where($localeKey, '=', (int) $langId);
+                     ->where($localeKey, '=', (int)$langId);
             }
         );
 
@@ -416,14 +428,14 @@ trait HasTranslations
         $hidden = $query->getModel()->getHidden();
         $fillable = array_diff($fillable, $hidden);
 
-        $fillable = array_map(function($column) use ($mainTable) {
+        $fillable = array_map(function ($column) use ($mainTable) {
             return "{$mainTable}.{$column} AS {$column}";
         }, $fillable);
 
         $query->addSelect($fillable);
 
         if ($this->hasTranslatedAttributes()) {
-            $columns = array_map(function($column) use ($alias) {
+            $columns = array_map(function ($column) use ($alias) {
                 return "{$alias}.{$column}";
             }, $this->getTranslatedAttributes());
 
