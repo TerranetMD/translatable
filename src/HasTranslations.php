@@ -9,6 +9,8 @@ use Terranet\Translatable\Exception\LocalesNotDefinedException;
 
 trait HasTranslations
 {
+    protected $cachedTranslations;
+    
     /**
      * Get translation for specified|default|fallback locale
      *
@@ -58,11 +60,13 @@ trait HasTranslations
     {
         # @fallback: sometimes for deep translations tree this collection is empty
         # we are going to actualise this collection in order to get its results.
-        if (!$this->translations->count()) {
-            $this->translations = $this->translations()->getResults();
+        if (null === $this->cachedTranslations) {
+            $this->cachedTranslations = $this->translations->count()
+                ? $this->translations
+                : $this->translations()->getResults();
         }
 
-        return $this->translations;
+        return $this->cachedTranslations;
     }
 
     /**
