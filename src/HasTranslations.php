@@ -10,7 +10,9 @@ use Terranet\Translatable\Exception\LocalesNotDefinedException;
 trait HasTranslations
 {
     protected $cachedTranslations;
-    
+
+    protected $saving = false;
+
     /**
      * Get translation for specified|default|fallback locale
      *
@@ -58,6 +60,10 @@ trait HasTranslations
 
     public function cachedTranslations()
     {
+        if ($this->saving) {
+            return $this->translations;
+        }
+
         # @fallback: sometimes for deep translations tree this collection is empty
         # we are going to actualise this collection in order to get its results.
         if (null === $this->cachedTranslations) {
@@ -281,6 +287,7 @@ trait HasTranslations
     protected function saveTranslations()
     {
         $saved = true;
+
         foreach ($this->translations as $translation) {
             if ($saved && $this->isTranslationDirty($translation)) {
                 $translation->setAttribute($this->getRelationKey(), $this->getKey());
@@ -308,6 +315,8 @@ trait HasTranslations
      */
     public function fill(array $attributes)
     {
+        $this->saving = true;
+
         $totallyGuarded = $this->totallyGuarded();
 
         foreach ($attributes as $key => $values) {
@@ -323,7 +332,11 @@ trait HasTranslations
             }
         }
 
-        return parent::fill($attributes);
+        $result = parent::fill($attributes);
+
+        $this->saving = false;
+
+        return $result;
     }
 
     /**
