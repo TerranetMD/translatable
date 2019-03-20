@@ -50,7 +50,7 @@ trait HasTranslations
     protected function getTranslationByLocaleKey($key)
     {
         foreach ($this->cachedTranslations() as $translation) {
-            if ($translation->getAttribute($this->getLocaleKey()) === $key) {
+            if ((int) $translation->getAttribute($this->getLocaleKey()) === (int) $key) {
                 return $translation;
             }
         }
@@ -152,7 +152,7 @@ trait HasTranslations
         $locale = $locale ?: \localizer\locale()->id();
 
         foreach ($this->cachedTranslations() as $translation) {
-            if ($translation->getAttribute($this->getLocaleKey()) == $locale) {
+            if ((int) $translation->getAttribute($this->getLocaleKey()) === (int) $locale) {
                 return true;
             }
         }
